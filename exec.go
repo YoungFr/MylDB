@@ -45,9 +45,9 @@ func serializeRow(row *Row, cursor *Cursor) {
 	}
 }
 
-func id2bytes(n int32) []byte {
+func id2bytes(id int32) []byte {
 	bytebuf := bytes.NewBuffer([]byte{})
-	binary.Write(bytebuf, binary.BigEndian, n)
+	binary.Write(bytebuf, binary.BigEndian, id)
 	return bytebuf.Bytes()
 }
 
@@ -70,9 +70,9 @@ func deserializeRow(row *Row, cursor *Cursor) {
 
 func bytes2id(bs []byte) int32 {
 	bytebuf := bytes.NewBuffer(bs)
-	var data int32
-	binary.Read(bytebuf, binary.BigEndian, &data)
-	return data
+	var id int32
+	binary.Read(bytebuf, binary.BigEndian, &id)
+	return id
 }
 
 func printRow(row *Row) {

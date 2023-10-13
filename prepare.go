@@ -35,8 +35,8 @@ func prepareStmt(cmd string, stmt *Stmt) PrepareStmtResult {
 			return PREPARE_SYNTAX_ERROR
 		}
 		if id > math.MaxInt32 {
-			fmt.Fprintf(os.Stderr, "id is too large: %d > %d", id, math.MaxInt32)
-			os.Exit(1)
+			fmt.Fprintf(os.Stderr, "id is too large: %d > %d\n", id, math.MaxInt32)
+			return PREPARE_SYNTAX_ERROR
 		}
 		stmt.row.id = int32(id)
 		if len(fields[2]) > USERNAME_SIZE {
