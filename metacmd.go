@@ -5,7 +5,6 @@ import (
 	"os"
 )
 
-// 以 '.' 字符开头的命令称为元命令
 type MetaCommandResult int
 
 const (

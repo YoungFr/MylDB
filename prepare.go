@@ -2,22 +2,11 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
 )
-
-type StmtType int
-
-const (
-	STMT_INSERT StmtType = iota
-	STMT_SELECT
-)
-
-type Stmt struct {
-	tp  StmtType
-	row Row
-}
 
 type PrepareStmtResult int
 
@@ -27,15 +16,13 @@ const (
 	PREPARE_SYNTAX_ERROR
 )
 
-// 根据输入的命令准备好要执行的语句
 func prepareStmt(cmd string, stmt *Stmt) PrepareStmtResult {
 	fields := strings.Fields(cmd)
 	switch strings.ToLower(fields[0]) {
 	case "insert":
-		// "INSERT [id] [username] [email]"
 		stmt.tp = STMT_INSERT
 		if len(fields) != 4 {
-			fmt.Fprintf(os.Stderr, "mismatched item numbers to be inserted: expected 3 but got %d\n", len(fields)-1)
+			fmt.Fprintf(os.Stderr, "mismatched number of fields to be inserted: expected 3 but got %d\n", len(fields)-1)
 			return PREPARE_SYNTAX_ERROR
 		}
 		id, err := strconv.Atoi(fields[1])
@@ -47,9 +34,13 @@ func prepareStmt(cmd string, stmt *Stmt) PrepareStmtResult {
 			fmt.Fprintf(os.Stderr, "id must be larger or equal than zero\n")
 			return PREPARE_SYNTAX_ERROR
 		}
+		if id > math.MaxInt32 {
+			fmt.Fprintf(os.Stderr, "id is too large: %d > %d", id, math.MaxInt32)
+			os.Exit(1)
+		}
 		stmt.row.id = int32(id)
 		if len(fields[2]) > USERNAME_SIZE {
-			fmt.Fprintf(os.Stderr, "username is too long: expected varchar(%d) but got varchar(%d)\n", USERNAME_SIZE, len(fields[2]))
+			fmt.Fprintf(os.Stderr, "username is too long: expected char(%d) but got char(%d)\n", USERNAME_SIZE, len(fields[2]))
 			return PREPARE_SYNTAX_ERROR
 		}
 		var username [USERNAME_SIZE]byte
@@ -58,7 +49,7 @@ func prepareStmt(cmd string, stmt *Stmt) PrepareStmtResult {
 		}
 		stmt.row.username = username
 		if len(fields[3]) > EMAIL_SIZE {
-			fmt.Fprintf(os.Stderr, "email is too long: expected varchar(%d) but got varchar(%d)\n", EMAIL_SIZE, len(fields[3]))
+			fmt.Fprintf(os.Stderr, "email is too long: expected char(%d) but got char(%d)\n", EMAIL_SIZE, len(fields[3]))
 			return PREPARE_SYNTAX_ERROR
 		}
 		var email [EMAIL_SIZE]byte
@@ -68,7 +59,6 @@ func prepareStmt(cmd string, stmt *Stmt) PrepareStmtResult {
 		stmt.row.email = email
 		return PREPARE_STMT_SUCCESS
 	case "select":
-		// "SELECT"
 		stmt.tp = STMT_SELECT
 		return PREPARE_STMT_SUCCESS
 	default:
